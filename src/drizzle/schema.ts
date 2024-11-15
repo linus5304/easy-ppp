@@ -1,7 +1,9 @@
+import { subscriptionTiers, TierNames } from "@/data/subscriptionTiers";
 import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  pgEnum,
   pgTable,
   primaryKey,
   real,
@@ -36,6 +38,7 @@ export const ProductTable = pgTable(
 export const productRelations = relations(ProductTable, ({ one, many }) => ({
   productCustomization: one(ProductCustomizationTable),
   productViews: many(ProductViewTable),
+  countryGroupDiscounts: many(CountryGroupDiscountTable),
 }));
 
 export const ProductCustomizationTable = pgTable("product_customizations", {
@@ -131,7 +134,6 @@ export const countryGroupRelations = relations(
 export const CountryGroupDiscountTable = pgTable(
   "country_group_discounts",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
     productId: uuid("product_id")
       .notNull()
       .references(() => ProductTable.id, { onDelete: "cascade" }),
@@ -145,5 +147,46 @@ export const CountryGroupDiscountTable = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.countryGroupId, table.productId] }),
+  })
+);
+
+export const countryGroupDiscountRelations = relations(
+  CountryGroupDiscountTable,
+  ({ one }) => ({
+    product: one(ProductTable, {
+      fields: [CountryGroupDiscountTable.productId],
+      references: [ProductTable.id],
+    }),
+    countryGroup: one(CountryGroupTable, {
+      fields: [CountryGroupDiscountTable.countryGroupId],
+      references: [CountryGroupTable.id],
+    }),
+  })
+);
+
+export const TierEnum = pgEnum(
+  "tier",
+  Object.keys(subscriptionTiers) as [TierNames]
+);
+
+export const UserSubscriptionTable = pgTable(
+  "user_subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clerkUserId: text("clerk_user_id").notNull().unique(),
+    stripeSubscriptionItemId: text("stripe_subscription_item_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    stripeCustomerId: text("stripe_customer_id"),
+    tier: TierEnum("tier").notNull(),
+    createdAt,
+    updatedAt,
+  },
+  (table) => ({
+    clerkUserIdIndex: index("user_subscriptions.clerk_user_id_index").on(
+      table.clerkUserId
+    ),
+    stripeCustomerIdIndex: index(
+      "user_subscriptions.stripe_customer_id_index"
+    ).on(table.stripeCustomerId),
   })
 );
