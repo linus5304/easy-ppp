@@ -2,8 +2,8 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { env } from "@/data/env/server";
-import { db } from "@/drizzle/db";
-import { UserSubscriptionTable } from "@/drizzle/schema";
+import { createUserSubscription } from "@/server/db/subscription";
+import { deleteUser } from "@/server/db/users";
 
 export async function POST(req: Request) {
   const headerPayload = await headers();
@@ -40,13 +40,16 @@ export async function POST(req: Request) {
   switch (event.type) {
     case "user.created":
       // user created
-      console.log("Hi", event.data.id);
-      event.data.id;
-      await db.insert(UserSubscriptionTable).values({
+      await createUserSubscription({
         clerkUserId: event.data.id,
         tier: "Free",
       });
       break;
+    case "user.deleted":
+      if (event.data.id != null) {
+        await deleteUser(event.data.id);
+        // TODO: Remove stripe subscription
+      }
   }
 
   return new Response("", { status: 200 });
