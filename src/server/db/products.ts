@@ -49,7 +49,7 @@ export async function getProductCustomization({
 
 export async function getProducts(
   userId: string,
-  { limit }: { limit?: number }
+  { limit }: { limit?: number } = {}
 ) {
   const cacheFn = dbCache(getProductsInternal, {
     tags: [getUserTag(userId, CACHE_TAGS.products)],
