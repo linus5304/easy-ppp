@@ -1,3 +1,4 @@
+import { getProductsCount } from "./db/products";
 import { getUserSubscriptionTier } from "./db/subscription";
 
 export async function canRemoveBranding(userId: string | null) {
@@ -19,4 +20,12 @@ export async function canAccessAnalytics(userId: string | null) {
 
   const tier = await getUserSubscriptionTier(userId);
   return tier.canAccessAnalytics;
+}
+
+export async function canCreateProduct(userId: string | null) {
+  if (userId == null) return false;
+
+  const tier = await getUserSubscriptionTier(userId);
+  const productsCount = await getProductsCount(userId);
+  return productsCount < tier.maxNumberOfProducts;
 }
