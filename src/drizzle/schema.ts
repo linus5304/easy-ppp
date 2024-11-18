@@ -99,7 +99,7 @@ export const productViewRelations = relations(ProductViewTable, ({ one }) => ({
 export const CountryTable = pgTable("countries", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
-  code: text("code").notNull(),
+  code: text("code").notNull().unique(),
   countryGroupId: uuid("country_group_id").references(
     () => CountryGroupTable.id,
     { onDelete: "cascade" }
@@ -128,6 +128,7 @@ export const countryGroupRelations = relations(
   CountryGroupTable,
   ({ many }) => ({
     countries: many(CountryTable),
+    countryGroupDiscounts: many(CountryGroupDiscountTable),
   })
 );
 

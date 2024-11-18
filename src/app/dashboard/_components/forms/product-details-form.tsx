@@ -17,14 +17,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { productDetailsSchema } from "@/schemas/products";
-import { createProduct } from "@/server/actions/products";
+import { createProduct, updateProduct } from "@/server/actions/products";
 import { useToast } from "@/hooks/use-toast";
+import RequiredLabelIcon from "@/components/reuired-label-icon";
 
-export function ProductDetailsForm() {
+export function ProductDetailsForm({ product }: {
+  product?: {
+    id: string;
+    name: string;
+    url: string;
+    description: string | null;
+  }
+}) {
   const { toast } = useToast();
   const form = useForm<z.infer<typeof productDetailsSchema>>({
     resolver: zodResolver(productDetailsSchema),
-    defaultValues: {
+    defaultValues: product ? { ...product, description: product?.description ?? "" } : {
       name: "",
       url: "",
       description: "",
@@ -32,7 +40,11 @@ export function ProductDetailsForm() {
   });
 
   async function onSubmit(values: z.infer<typeof productDetailsSchema>) {
-    const data = await createProduct(values);
+    // We use bind() here because updateProduct expects 2 parameters (id, values)
+    // but onSubmit only passes 1 parameter (values)
+    // bind() lets us "pre-fill" the first parameter (id) so the function only expects values
+    const action = product == null ? createProduct : updateProduct.bind(null, product.id);
+    const data = await action(values);
 
     if (data?.message) {
       toast({
@@ -55,7 +67,9 @@ export function ProductDetailsForm() {
             name="name"
             render={({ field }) => (
               <FormItem className="flex-grow">
-                <FormLabel>Name</FormLabel>
+                <FormLabel>Name
+                  <RequiredLabelIcon />
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -68,7 +82,9 @@ export function ProductDetailsForm() {
             name="url"
             render={({ field }) => (
               <FormItem className="flex-grow">
-                <FormLabel>Enter your website URL</FormLabel>
+                <FormLabel>Enter your website URL
+                  <RequiredLabelIcon />
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
