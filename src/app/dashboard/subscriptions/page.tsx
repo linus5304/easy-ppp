@@ -5,7 +5,7 @@ import { subscriptionTiers, subscriptionTiersInOrder, TierNames } from "@/data/s
 import { formatCompactNumber } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { createCancelSession, createCheckoutSession, createCustomerPortalSession } from "@/server/actions/stripe";
-import { getPricingViewCount } from "@/server/db/product-views";
+import { getProductViewCount } from "@/server/db/product-views";
 import { getProductsCount } from "@/server/db/products";
 import { getUserSubscriptionTier } from "@/server/db/subscriptions";
 import { auth } from "@clerk/nextjs/server";
@@ -18,7 +18,7 @@ export default async function SubscriptionsPage() {
 
     const tier = await getUserSubscriptionTier(userId);
     const productsCount = await getProductsCount(userId);
-    const pricingViewCount = await getPricingViewCount(userId, startOfMonth(new Date()));
+    const pricingViewCount = await getProductViewCount(userId, startOfMonth(new Date()));
 
     return (
         <>

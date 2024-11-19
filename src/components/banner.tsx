@@ -4,9 +4,9 @@ export default function Banner({
     message,
     mappings,
     customization,
-    canRemoveBanner
+    canRemoveBranding,
 }: {
-    canRemoveBanner: boolean;
+    canRemoveBranding: boolean;
     message: string;
     mappings: {
         coupon: string;
@@ -18,7 +18,7 @@ export default function Banner({
         textColor: string;
         fontSize: string;
         isSticky: boolean;
-        classPrefix?: string | undefined;
+        classPrefix?: string;
     };
 }) {
     const prefix = customization.classPrefix ?? "";
@@ -58,7 +58,7 @@ export default function Banner({
                 <span className={`${prefix}easy-ppp-message ${prefix}easy-ppp-override`} dangerouslySetInnerHTML={{
                     __html: mappedMessage
                 }} />
-                {!canRemoveBanner && (
+                {!canRemoveBranding && (
                     <a className={`${prefix}easy-ppp-branding`} href={`${env.NEXT_PUBLIC_SERVER_URL}`}>
                         Powered by Easy PPP
                     </a>

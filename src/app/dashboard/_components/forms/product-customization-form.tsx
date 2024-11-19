@@ -31,7 +31,7 @@ export default function ProductCustomizationForm({
         fontSize: string;
         isSticky: boolean;
         bannerContainer: string;
-        classPrefix: string | null;
+        classPrefix?: string;
     }
 }) {
     const { toast } = useToast();
@@ -67,7 +67,7 @@ export default function ProductCustomizationForm({
                         discount: "50",
                     }}
                     customization={formValues}
-                    canRemoveBanner={canRemoveBranding}
+                    canRemoveBranding={canRemoveBranding}
                 />
             </div>
             {!canCustomizeBanner && (
