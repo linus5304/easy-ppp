@@ -1,5 +1,5 @@
 import { getProductsCount } from "./db/products";
-import { getUserSubscriptionTier } from "./db/subscription";
+import { getUserSubscriptionTier } from "./db/subscriptions";
 
 export async function canRemoveBranding(userId: string | null) {
   if (userId == null) return false;

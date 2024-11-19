@@ -1,8 +1,9 @@
-import { subscriptionTiers } from "@/data/subscriptionTiers";
+import { PaidTierNames, subscriptionTiers } from "@/data/subscriptionTiers";
 import { db } from "@/drizzle/db";
 import { UserSubscriptionTable } from "@/drizzle/schema";
-import { getIdTag, dbCache, revalidateDBCache } from "@/lib/cache";
+import { getIdTag, dbCache, revalidateDBCache, getUserTag } from "@/lib/cache";
 import { CACHE_TAGS } from "@/lib/cache";
+import { SQL } from "drizzle-orm";
 
 export async function createUserSubscription(
   data: typeof UserSubscriptionTable.$inferInsert
@@ -29,9 +30,33 @@ export async function createUserSubscription(
   return newSubscription;
 }
 
+export async function updateUserSubscription(
+  where: SQL,
+  data: Partial<typeof UserSubscriptionTable.$inferInsert>
+) {
+  const [updatedSubscription] = await db
+    .update(UserSubscriptionTable)
+    .set(data)
+    .where(where)
+    .returning({
+      id: UserSubscriptionTable.id,
+      userId: UserSubscriptionTable.clerkUserId,
+    });
+
+  console.log("updatedSubscription", updatedSubscription);
+
+  if (updatedSubscription != null) {
+    revalidateDBCache({
+      tag: CACHE_TAGS.subscriptions,
+      userId: updatedSubscription.userId,
+      id: updatedSubscription.id,
+    });
+  }
+}
+
 export async function getUserSubscription(userId: string) {
   const cacheFn = dbCache(getUserSubscriptionInternal, {
-    tags: [getIdTag(userId, CACHE_TAGS.subscriptions)],
+    tags: [getUserTag(userId, CACHE_TAGS.subscriptions)],
   });
 
   return cacheFn(userId);
